@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { account } from 'src/dtos/account.dtos'
 import { createError, ErrorType } from 'src/model/res.model'
-import { createGuid, formatDate } from 'src/utilities/base.utilities'
-import { encrypto } from 'src/utilities/crypto.utilities'
+import { baseUtils, cryptoUtils } from '@xizher/js-utils'
+import ext from '@xizher/js-ext'
 import pgSqlExec from 'src/utilities/pg.utilities'
 import { testEmail } from 'src/utilities/reg.utilities'
 
@@ -43,7 +43,7 @@ export class AccountService {
   }
 
   public async addAccount (dto: account.req.IAccountInstallDto) : Promise<account.res.IAccountInfoDto> {
-    const id = createGuid(), createTime = Date.now()
+    const id = baseUtils.createGuid(), createTime = Date.now()
     if (!testEmail(dto.email)) {
       return Promise.reject(ErrorType.INPUT_ERROR)
     }
@@ -59,7 +59,7 @@ export class AccountService {
     const sqlStr = `
       insert into ${this._tableName} (username, email, password, id, createtime)
         values (
-          '${dto.username}', '${dto.email}', '${encrypto(dto.password)}', '${id}', '${createTime}'
+          '${dto.username}', '${dto.email}', '${cryptoUtils.encrypto(dto.password)}', '${id}', '${createTime}'
         )
     `
     const result = await pgSqlExec(sqlStr)
@@ -70,7 +70,7 @@ export class AccountService {
       id,
       username: dto.username,
       email: dto.email,
-      createTime: formatDate(createTime, 'yyyy/MM/dd hh:mm:ss')
+      createTime: ext(createTime).toDateFormat('yyyy/MM/dd hh:mm:ss')
     }
   }
 
@@ -95,7 +95,7 @@ export class AccountService {
       updateStrList.push(`username = '${dto.username}'`)
     }
     if (dto.password) {
-      updateStrList.push(`password = '${encrypto(dto.password)}'`)
+      updateStrList.push(`password = '${cryptoUtils.encrypto(dto.password)}'`)
     }
     let sqlStr = `
       update ${this._tableName}
@@ -113,7 +113,7 @@ export class AccountService {
       id: account['id'],
       username: account['username'],
       email: account['email'],
-      createTime: formatDate(account['createtime'], 'yyyy/MM/dd hh:mm:ss')
+      createTime: ext(account['createtime'] as number).toDateFormat('yyyy/MM/dd hh:mm:ss'),
     }
   }
 
