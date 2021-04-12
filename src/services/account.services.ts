@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { account } from 'src/dtos/account.dtos'
 import { createError, ErrorType } from 'src/model/res.model'
-import { baseUtils, cryptoUtils } from '@xizher/js-utils'
+import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
 import ext from '@xizher/js-ext'
-import pgSqlExec from 'src/utilities/pg.utilities'
-import { testEmail } from 'src/utilities/reg.utilities'
+import pgSqlExec from '@xizher/pg'
 
 @Injectable()
 export class AccountService {
@@ -42,9 +41,9 @@ export class AccountService {
     return { items, total }
   }
 
-  public async addAccount (dto: account.req.IAccountInstallDto) : Promise<account.res.IAccountInfoDto> {
+  public async addAccount (dto: account.req.IAccountInsertDto) : Promise<account.res.IAccountInfoDto> {
     const id = baseUtils.createGuid(), createTime = Date.now()
-    if (!testEmail(dto.email)) {
+    if (!regUtils.testEmail(dto.email)) {
       return Promise.reject(ErrorType.INPUT_ERROR)
     }
     if (!this.checkIsUsername(dto.username)) {
@@ -77,7 +76,7 @@ export class AccountService {
   public async modityAccount (dto: account.req.IAccountUpdateDto) : Promise<account.res.IAccountInfoDto> {
     const updateStrList = []
     if (dto.email) {
-      if (!testEmail(dto.email)) {
+      if (!regUtils.testEmail(dto.email)) {
         return Promise.reject(ErrorType.INPUT_ERROR)
       }
       if (await this.checkHasEmail(dto.email)) {
@@ -114,6 +113,32 @@ export class AccountService {
       username: account['username'],
       email: account['email'],
       createTime: ext(account['createtime'] as number).toDateFormat('yyyy/MM/dd hh:mm:ss'),
+    }
+  }
+
+  public async loginAccount (dto: account.req.IAccountLoginDto) : Promise<account.res.IAccountLoginResultDto> {
+    let { username, email } = dto
+    const { password } = dto
+    if (username && !this.checkIsUsername(username)) {
+      return Promise.reject(ErrorType.INPUT_ERROR)
+    }
+    if (email && !regUtils.testEmail(email)) {
+      return Promise.reject(ErrorType.INPUT_ERROR)
+    }
+    username ??= ''
+    email ??= ''
+    const sqlStr = `select * from ${this._tableName}
+      where (username = '${username}' or email = '${email}') and password = '${cryptoUtils.encrypto(password)}'
+    `
+    const result = await pgSqlExec(sqlStr)
+    let token = null
+    let success = false
+    if (result.rowCount === 1) {
+      success = true
+      token = baseUtils.createGuid()
+    }
+    return {
+      token, success
     }
   }
 

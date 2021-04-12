@@ -15,10 +15,16 @@ export namespace account {
       id: string
     }
 
-    export interface IAccountInstallDto {
+    export interface IAccountInsertDto {
       username: string
       password: string
       email: string
+    }
+
+    export interface IAccountLoginDto {
+      username?: string
+      email?: string
+      password: string
     }
 
   }
@@ -36,6 +42,11 @@ export namespace account {
     export interface IAccountInfoListDto {
       items: IAccountInfoDto[]
       total: number
+    }
+
+    export interface IAccountLoginResultDto {
+      success: boolean
+      token?: string
     }
 
   }

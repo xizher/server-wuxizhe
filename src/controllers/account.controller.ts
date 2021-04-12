@@ -36,4 +36,13 @@ export class AccountController {
     }
   }
 
+  @Post('/login')
+  async login (@Req() req: Request) : Promise<unknown> {
+    try {
+      return new SuccessModel(await this.accountService.loginAccount(req.body as any)) // eslint-disable-line
+    } catch (error) {
+      return new ErrorModel(error)
+    }
+  }
+
 }
