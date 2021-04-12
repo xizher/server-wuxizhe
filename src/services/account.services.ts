@@ -117,18 +117,9 @@ export class AccountService {
   }
 
   public async loginAccount (dto: account.req.IAccountLoginDto) : Promise<account.res.IAccountLoginResultDto> {
-    let { username, email } = dto
-    const { password } = dto
-    if (username && !this.checkIsUsername(username)) {
-      return Promise.reject(ErrorType.INPUT_ERROR)
-    }
-    if (email && !regUtils.testEmail(email)) {
-      return Promise.reject(ErrorType.INPUT_ERROR)
-    }
-    username ??= ''
-    email ??= ''
+    const { password, account } = dto
     const sqlStr = `select * from ${this._tableName}
-      where (username = '${username}' or email = '${email}') and password = '${cryptoUtils.encrypto(password)}'
+      where (username = '${account}' or email = '${account}') and password = '${cryptoUtils.encrypto(password)}'
     `
     const result = await pgSqlExec(sqlStr)
     let token = null

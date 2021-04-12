@@ -22,8 +22,7 @@ export namespace account {
     }
 
     export interface IAccountLoginDto {
-      username?: string
-      email?: string
+      account: string
       password: string
     }
 
