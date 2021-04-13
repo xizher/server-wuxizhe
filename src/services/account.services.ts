@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { account } from 'src/dtos/account.dtos'
+import { IAccountCheckDto, IAccountCheckResultDto, IAccountInfoDto, IAccountInsertDto, IAccountLoginDto, IAccountLoginResultDto, IAccountUpdateDto } from 'src/dtos/account.dtos'
 import { createError, ErrorType } from 'src/model/res.model'
 import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
 import ext from '@xizher/js-ext'
 import pgSqlExec from '@xizher/pg'
+import { checkToekn, createToken } from 'src/token'
 
 @Injectable()
 export class AccountService {
@@ -29,19 +30,9 @@ export class AccountService {
     return reg.test(username)
   }
 
-  public async getAllAccounts () : Promise<account.res.IAccountInfoListDto> {
-    const sqlStr = `select * from ${this._tableName}`
-    const result = await pgSqlExec(sqlStr)
-    const items = (result.rows as account.res.IAccountInfoDto[])
-      .map(item => {
-        delete item.password
-        return item
-      })
-    const total = result.rowCount
-    return { items, total }
-  }
+  private
 
-  public async addAccount (dto: account.req.IAccountInsertDto) : Promise<account.res.IAccountInfoDto> {
+  public async addAccount (dto: IAccountInsertDto) : Promise<IAccountInfoDto> {
     const id = baseUtils.createGuid(), createTime = Date.now()
     if (!regUtils.testEmail(dto.email)) {
       return Promise.reject(ErrorType.INPUT_ERROR)
@@ -73,7 +64,7 @@ export class AccountService {
     }
   }
 
-  public async modityAccount (dto: account.req.IAccountUpdateDto) : Promise<account.res.IAccountInfoDto> {
+  public async modityAccount (dto: IAccountUpdateDto) : Promise<IAccountInfoDto> {
     const updateStrList = []
     if (dto.email) {
       if (!regUtils.testEmail(dto.email)) {
@@ -116,20 +107,33 @@ export class AccountService {
     }
   }
 
-  public async loginAccount (dto: account.req.IAccountLoginDto) : Promise<account.res.IAccountLoginResultDto> {
+  public async loginAccount (dto: IAccountLoginDto) : Promise<IAccountLoginResultDto> {
     const { password, account } = dto
-    const sqlStr = `select * from ${this._tableName}
+    const sqlStr = `select id, username, email, createTime from ${this._tableName}
       where (username = '${account}' or email = '${account}') and password = '${cryptoUtils.encrypto(password)}'
     `
-    const result = await pgSqlExec(sqlStr)
+    const result = await pgSqlExec<IAccountInfoDto>(sqlStr)
     let token = null
     let success = false
     if (result.rowCount === 1) {
       success = true
-      token = baseUtils.createGuid()
+      token = await createToken(result.rows[0].id)
     }
     return {
-      token, success
+      token, success,
+      account: result.rows[0]
+    }
+  }
+
+  public async checkAccount (dto: IAccountCheckDto) : Promise<IAccountCheckResultDto> {
+    const success = await checkToekn(dto.id, dto.token)
+    if (!success) {
+      return { success }
+    }
+    const result = await pgSqlExec<IAccountInfoDto>(`select username, email, createtime, id from ${this._tableName} where id = '${dto.id}'`)
+    return {
+      success,
+      account: result.rows[0]
     }
   }
 

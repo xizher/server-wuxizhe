@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Request } from '@nestjs/common'
+import { Controller, Post, Req, Request } from '@nestjs/common'
 import { ErrorModel, SuccessModel } from 'src/model/res.model'
 import { AccountService } from 'src/services/account.services'
 
@@ -7,15 +7,6 @@ export class AccountController {
 
   constructor (private readonly accountService: AccountService) {
     // nothing
-  }
-
-  @Get('/listAll')
-  async listAll () : Promise<unknown> {
-    try {
-      return new SuccessModel(await this.accountService.getAllAccounts())
-    } catch (error) {
-      return new ErrorModel(error)
-    }
   }
 
   @Post('/add')
@@ -40,6 +31,15 @@ export class AccountController {
   async login (@Req() req: Request) : Promise<unknown> {
     try {
       return new SuccessModel(await this.accountService.loginAccount(req.body as any)) // eslint-disable-line
+    } catch (error) {
+      return new ErrorModel(error)
+    }
+  }
+
+  @Post('/check')
+  async check (@Req() req: Request) : Promise<unknown> {
+    try {
+      return new SuccessModel(await this.accountService.checkAccount(req.body as any)) // eslint-disable-line
     } catch (error) {
       return new ErrorModel(error)
     }

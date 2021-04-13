@@ -1,53 +1,51 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
-export namespace account {
+export interface IAccountInfoDto {
+  id: string
+  username: string
+  email: string
+  createTime: string
+}
 
-  export namespace req {
+export interface IAccountUpdateDto {
+  id: string
+  username?: string
+  password?: string
+  email?: string
+}
 
-    export interface IAccountUpdateDto {
-      id: string
-      username?: string
-      password?: string
-      email?: string
-    }
+export interface IAccountUpdateResultDto {
+  id: string
+  username: string
+  email: string
+}
 
-    export interface IAccountDeleteDto {
-      id: string
-    }
+export interface IAccountIdDto {
+  id: string
+}
 
-    export interface IAccountInsertDto {
-      username: string
-      password: string
-      email: string
-    }
+export interface IAccountInsertDto {
+  username: string
+  password: string
+  email: string
+}
 
-    export interface IAccountLoginDto {
-      account: string
-      password: string
-    }
+export interface IAccountLoginDto {
+  account: string
+  password: string
+}
 
-  }
+export interface IAccountLoginResultDto {
+  success: boolean
+  token?: string
+  account?: IAccountInfoDto
+}
 
-  export namespace res {
-
-    export interface IAccountInfoDto {
-      id: string
-      username: string
-      password?: string
-      email: string
-      createTime: string
-    }
-
-    export interface IAccountInfoListDto {
-      items: IAccountInfoDto[]
-      total: number
-    }
-
-    export interface IAccountLoginResultDto {
-      success: boolean
-      token?: string
-    }
-
-  }
-
+export interface IAccountCheckDto {
+  id: string
+  token: string
+}
+export interface IAccountCheckResultDto {
+  success: boolean
+  account?: IAccountInfoDto
 }
