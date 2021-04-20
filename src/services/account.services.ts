@@ -2,16 +2,18 @@ import { Injectable } from '@nestjs/common'
 import pgSqlExec from '@xizher/pg'
 import {
   IAccountInfoDto,
+  IAccountLoginDto,
+  IAccountLoginResultDto,
   IAddAccountDto,
 } from 'src/dtos/account.dtos'
 import { createError, ErrorType } from 'src/model/res.model'
-import { baseUtils, regUtils } from '@xizher/js-utils'
+import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
 // import { IAccountCheckDto, IAccountCheckResultDto, IAccountInfoDto, IAccountInsertDto, IAccountLoginDto, IAccountLoginResultDto, IAccountUpdateDto } from 'src/dtos/account.dtos'
 // import { createError, ErrorType } from 'src/model/res.model'
 // import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
 // import ext from '@xizher/js-ext'
 // import pgSqlExec from '@xizher/pg'
-// import { checkToekn, createToken } from 'src/token'
+import { createToken } from 'src/token'
 
 @Injectable()
 export class AccountService {
@@ -66,7 +68,7 @@ export class AccountService {
     await this._isEmail(email)
     await this._hasEmail(email)
     const id = baseUtils.createGuid()
-    const password = escape(dto.password)
+    const password = cryptoUtils.encrypto(escape(dto.password))
     const sqlStr = `
       insert into ${this._tableName} (
         id, username, email, password
@@ -81,25 +83,27 @@ export class AccountService {
     return { id, username, email }
   }
 
-  //#endregion
+  public async loginAccount (dto: IAccountLoginDto) : Promise<IAccountLoginResultDto> {
+    const { password, account } = dto
+    const sqlStr = `
+      select id, username, email
+        from ${this._tableName}
+        where (username = '${account}' or email = '${account}') and password = '${cryptoUtils.encrypto(escape(password))}'
+    `
+    const result = await pgSqlExec<IAccountInfoDto>(sqlStr)
+    let token = null
+    let success = false
+    if (result.rowCount === 1) {
+      success = true
+      token = await createToken(result.rows[0].id)
+    }
+    return {
+      token, success,
+      account: result.rows[0]
+    }
+  }
 
-  // public async loginAccount (dto: IAccountLoginDto) : Promise<IAccountLoginResultDto> {
-  //   const { password, account } = dto
-  //   const sqlStr = `select id, username, email, createTime from ${this._tableName}
-  //     where (username = '${account}' or email = '${account}') and password = '${cryptoUtils.encrypto(password)}'
-  //   `
-  //   const result = await pgSqlExec<IAccountInfoDto>(sqlStr)
-  //   let token = null
-  //   let success = false
-  //   if (result.rowCount === 1) {
-  //     success = true
-  //     token = await createToken(result.rows[0].id)
-  //   }
-  //   return {
-  //     token, success,
-  //     account: result.rows[0]
-  //   }
-  // }
+  //#endregion
 
   // public async checkAccount (dto: IAccountCheckDto) : Promise<IAccountCheckResultDto> {
   //   const success = await checkToekn(dto.id, dto.token)

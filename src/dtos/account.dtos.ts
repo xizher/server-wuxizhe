@@ -12,6 +12,17 @@ export interface IAccountInfoDto {
   email: string
 }
 
+export interface IAccountLoginDto {
+  account: string
+  password: string
+}
+
+export interface IAccountLoginResultDto {
+  success: boolean
+  token?: string
+  account?: IAccountInfoDto
+}
+
 // export interface IAccountUpdateDto {
 //   id: string
 //   username?: string
