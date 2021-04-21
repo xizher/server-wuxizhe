@@ -8,12 +8,8 @@ import {
 } from 'src/dtos/account.dtos'
 import { createError, ErrorType } from 'src/model/res.model'
 import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
-// import { IAccountCheckDto, IAccountCheckResultDto, IAccountInfoDto, IAccountInsertDto, IAccountLoginDto, IAccountLoginResultDto, IAccountUpdateDto } from 'src/dtos/account.dtos'
-// import { createError, ErrorType } from 'src/model/res.model'
-// import { baseUtils, cryptoUtils, regUtils } from '@xizher/js-utils'
-// import ext from '@xizher/js-ext'
-// import pgSqlExec from '@xizher/pg'
-import { createToken } from 'src/token'
+import { createToken, getAccountByToken } from 'src/token'
+import { IToken } from 'src/dtos/token.dtos'
 
 @Injectable()
 export class AccountService {
@@ -105,16 +101,9 @@ export class AccountService {
 
   //#endregion
 
-  // public async checkAccount (dto: IAccountCheckDto) : Promise<IAccountCheckResultDto> {
-  //   const success = await checkToekn(dto.id, dto.token)
-  //   if (!success) {
-  //     return { success }
-  //   }
-  //   const result = await pgSqlExec<IAccountInfoDto>(`select username, email, createtime, id from ${this._tableName} where id = '${dto.id}'`)
-  //   return {
-  //     success,
-  //     account: result.rows[0]
-  //   }
-  // }
+  public async checkAccount (dto: IToken) : Promise<IAccountInfoDto> {
+    const account = await getAccountByToken(dto.token)
+    return account
+  }
 
 }
