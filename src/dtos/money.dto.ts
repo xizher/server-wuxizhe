@@ -3,11 +3,11 @@ export interface IMoneyDto {
   type: string
   value: number
   lonlat: string | null
-  time: string
+  time: string | number
   comment: string
 }
 
-export interface IMoneyFormatDto {
+export interface IMoneyFormatDto extends IMoneyDto {
   timeFormat: string
 }
 
