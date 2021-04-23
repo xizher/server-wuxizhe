@@ -48,6 +48,7 @@ export class MoneyService {
         '${id}', '${type}', ${value}, '${lonlat ?? ''}', '${comment ?? ''}', ${time}
       )
     `
+    console.log(dto, sqlStr)
     const result = await pgSqlExec(sqlStr)
     if (result.rowCount !== 1) {
       return Promise.reject(result)
