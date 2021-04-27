@@ -44,6 +44,7 @@ export class BlogService {
     }
     return {
       ...dto, id,
+      publish: false,
       createTime: ext(createTime).toDateFormat('yyyy/MM/dd hh:mm:ss'),
       modityTime: ext(createTime).toDateFormat('yyyy/MM/dd hh:mm:ss'),
     }
@@ -62,6 +63,7 @@ export class BlogService {
         description: unescape(item.description),
         keywords: unescape((item.keywords as string)).split(','),
         content: unescape(item.content),
+        publish: item.publish,
         createTime: ext(Number(item.createtime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
         modityTime: ext(Number(item.moditytime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
       }))
@@ -70,13 +72,16 @@ export class BlogService {
 
   public async modityBlog (dto: IModityBlogDto, token: string) : Promise<true> {
     await getAccountByToken(token)
-    const { id, title, description, keywords, content } = dto
+    const { id, title, description, keywords, content, publish } = dto
     const time = Date.now()
     const updateList = []
     title && updateList.push(`title = '${escape(title)}'`)
     description && updateList.push(`description = '${escape(description)}'`)
     content && updateList.push(`content = '${escape(content)}'`)
     keywords && Array.isArray(keywords) && updateList.push(`keywords = '${escape(keywords.join(','))}'`)
+    if (typeof publish === 'boolean') {
+      updateList.push(`publish = ${publish}`)
+    }
     const sqlStr = `
       update ${this._tableName} set ${updateList.join(',')}, moditytime= '${time}'
         where id = '${id}'

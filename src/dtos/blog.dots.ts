@@ -11,6 +11,7 @@ export interface IBlogDto {
   description: string
   keywords: string[] | string
   content: string
+  publish: boolean
   createTime?: string
   createtime?: string
   modityTime?: string
@@ -28,6 +29,7 @@ export interface IModityBlogDto {
   description?: string
   keywords?: string[]
   content?: string
+  publish?: boolean
 }
 
 export interface IDeleteBlogDto {
