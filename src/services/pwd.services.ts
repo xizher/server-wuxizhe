@@ -62,7 +62,7 @@ export class PwdService {
     pwd && updateList.push(`pwd = '${pwd}'`)
     comment && updateList.push(`comment = '${escape(comment)}'`)
     const sqlStr = `
-      update ${this._tableName} set ${updateList.join(',')}'
+      update ${this._tableName} set ${updateList.join(',')}
         where id = '${id}'
     `
     const result = await pgSqlExec(sqlStr)
