@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Req, Request } from '@nestjs/common'
 import { ErrorModel, SuccessModel } from 'src/model/res.model'
-import { MoneyService } from 'src/services/money.services'
+import { MoneyService } from 'src/services/money.service'
 
 @Controller('/api/money')
 export class MoneyController {

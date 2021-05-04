@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Req, Request } from '@nestjs/common'
 import { ErrorModel, SuccessModel } from 'src/model/res.model'
-import { PwdService } from 'src/services/pwd.services'
+import { PwdService } from 'src/services/pwd.service'
 
 @Controller('/api/pwd')
 export class PwdController {

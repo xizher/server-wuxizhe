@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Req, Request } from '@nestjs/common'
 import { ErrorModel, SuccessModel } from 'src/model/res.model'
-import { BlogService } from 'src/services/blog.services'
+import { BlogService } from 'src/services/blog.service'
 
 @Controller('/api/blog')
 export class BlogController {
