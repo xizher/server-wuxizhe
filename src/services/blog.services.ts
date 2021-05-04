@@ -58,6 +58,7 @@ export class BlogService {
     return {
       total: result.rowCount,
       items: result.rows.map(item => ({
+        ...item,
         id: item.id,
         title: unescape(item.title),
         description: unescape(item.description),
@@ -66,7 +67,7 @@ export class BlogService {
         publish: item.publish,
         createTime: ext(Number(item.createtime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
         modityTime: ext(Number(item.moditytime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
-      }))
+      })).sort((i, j) => Number(i.createtime) - Number(j.createtime))
     }
   }
 
