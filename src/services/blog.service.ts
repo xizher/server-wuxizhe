@@ -1,18 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common'
 import { baseUtils } from '@xizher/js-utils'
 import pgSqlExec from '@xizher/pg'
-import { IAddBlogDto, IBlogDto, IBlogListDto, IDeleteBlogDto, IModityBlogDto } from 'src/dtos/blog.dots'
+import { IAddBlogDto, IBlogDto, IDeleteBlogDto, IModityBlogDto } from 'src/dtos/blog.dots'
 import { getAccountByToken } from 'src/token'
 import ext from '@xizher/js-ext'
+import { BaseService, IQueryListOptions } from './base.service'
 
 @Injectable()
-export class BlogService {
+export class BlogService extends BaseService {
 
-  //#region 私有属性
-
-  private _tableName = 'tb_blog'
-
-  //#endregion
+  constructor () {
+    super('tb_blog')
+  }
 
   //#region 私有方法
 
@@ -26,7 +26,7 @@ export class BlogService {
     const id = baseUtils.createGuid()
     const createTime = Date.now()
     const sqlStr = `
-      insert into ${this._tableName} (
+      insert into ${this.baseTable_} (
         id, title, description, keywords, content, createtime, modityTime
       ) values (
         '${id}',
@@ -50,14 +50,11 @@ export class BlogService {
     }
   }
 
-  public async listBlogs () : Promise<IBlogListDto> {
-    const sqlStr = `
-      select * from ${this._tableName}
-    `
-    const result = await pgSqlExec<IBlogDto>(sqlStr)
+  public async $queryList (options: IQueryListOptions, token: string) : Promise<any> {
+    const { total, items } = await super.$queryList<IBlogDto>(options, token)
     return {
-      total: result.rowCount,
-      items: result.rows.map(item => ({
+      total,
+      items: items.map(item => ({
         ...item,
         id: item.id,
         title: unescape(item.title),
@@ -65,9 +62,11 @@ export class BlogService {
         keywords: unescape((item.keywords as string)).split(','),
         content: unescape(item.content),
         publish: item.publish,
+        createtime: Number(item.createtime),
+        moditytime: Number(item.moditytime),
         createTime: ext(Number(item.createtime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
         modityTime: ext(Number(item.moditytime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
-      })).sort((i, j) => Number(i.createtime) - Number(j.createtime))
+      }))
     }
   }
 
@@ -84,7 +83,7 @@ export class BlogService {
       updateList.push(`publish = ${publish}`)
     }
     const sqlStr = `
-      update ${this._tableName} set ${updateList.join(',')}, moditytime= '${time}'
+      update ${this.baseTable_} set ${updateList.join(',')}, moditytime= '${time}'
         where id = '${id}'
     `
     const result = await pgSqlExec(sqlStr)
@@ -97,7 +96,7 @@ export class BlogService {
   public async deleteBlog (dto: IDeleteBlogDto, token: string) : Promise<true> {
     await getAccountByToken(token)
     const sqlStr = `
-      delete from ${this._tableName}
+      delete from ${this.baseTable_}
         where id = '${dto.id}'
     `
     const result = await pgSqlExec(sqlStr)

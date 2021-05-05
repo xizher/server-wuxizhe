@@ -1,8 +1,13 @@
-import { Controller, Get, Post, Req, Request } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
+import { Controller, Get, Headers, Post, Query, Req, Request, UseInterceptors } from '@nestjs/common'
 import { ErrorModel, SuccessModel } from 'src/model/res.model'
+import { BaseInterceptor } from 'src/services/base.service'
 import { BlogService } from 'src/services/blog.service'
 
 @Controller('/api/blog')
+@UseInterceptors(BaseInterceptor)
 export class BlogController {
 
   constructor (private readonly blogService: BlogService) {
@@ -21,9 +26,9 @@ export class BlogController {
 
 
   @Get('/list')
-  async listBlogs () : Promise<unknown> {
+  async listBlogs (@Query() query, @Headers() headers) : Promise<unknown> {
     try {
-      return new SuccessModel(await this.blogService.listBlogs())
+      return new SuccessModel(await this.blogService.$queryList(query, headers['token']))
     } catch (error) {
       return new ErrorModel(error)
     }
