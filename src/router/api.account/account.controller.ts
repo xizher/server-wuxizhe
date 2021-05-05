@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Controller, Post, Req, Request } from '@nestjs/common'
-import { ErrorModel, SuccessModel } from 'src/model/res.model'
+import { Controller, Post, Req, Request, UseInterceptors } from '@nestjs/common'
+import { CatchErrorInterceptor, SuccessResInterceptor } from 'src/model/res.model'
 import AccountSerivce from './account.service'
 
 @Controller('api/account')
+@UseInterceptors(CatchErrorInterceptor, SuccessResInterceptor)
 export class AccountController {
 
   constructor (private readonly accountService: AccountSerivce) {
@@ -13,20 +14,12 @@ export class AccountController {
 
   @Post('/login')
   async login (@Req() req: Request) : Promise<unknown> {
-    try {
-      return new SuccessModel(await this.accountService.$login(req.body as any))
-    } catch (error) {
-      return new ErrorModel(error)
-    }
+    return await this.accountService.$login(req.body as any)
   }
 
   @Post('/check')
   async check (@Req() req: Request) : Promise<unknown> {
-    try {
-      return new SuccessModel(await this.accountService.$check(req.body as any))
-    } catch (error) {
-      return new ErrorModel(error)
-    }
+    return await this.accountService.$check(req.body as any)
   }
 
 }

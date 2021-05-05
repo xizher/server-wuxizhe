@@ -4,7 +4,7 @@ import pgSqlExec from '@xizher/pg'
 import { cryptoUtils } from '@xizher/js-utils'
 import { AccountInfoDTO, AccountLoginDTO, AccountLoginResultDTO, TokenDTO } from './account.dto'
 import { createToken, getAndCheckAccountByToken } from 'src/token'
-import { createError } from 'src/model/res.model'
+import { createError, ErrorType } from 'src/model/res.model'
 
 @Injectable()
 export class AccountSerivce extends SerivceBase {
@@ -42,7 +42,7 @@ export class AccountSerivce extends SerivceBase {
   public async $check (dto: TokenDTO) : Promise<AccountInfoDTO> {
     const account = await getAndCheckAccountByToken(dto.token)
     if (!account) {
-      return createError('0x101', 'Token已失效，请重新登录', '用户已过期，请重新登录')
+      return createError(ErrorType.TOKEN_ERROR)
     }
     return account
   }
