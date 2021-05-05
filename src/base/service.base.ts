@@ -44,7 +44,7 @@ export class SerivceBase {
     const sqlStr = `
       insert into ${this.baseTable_} (
         id, ${Object.keys(insertObj).join(',')}
-      ) values ( ${id},
+      ) values ( '${id}',
         ${
           Object.values(insertObj).map(value => {
             if (typeof value === 'string') {
@@ -56,6 +56,22 @@ export class SerivceBase {
       )
     `
     /* eslint-enable @typescript-eslint/indent */
+    return await pgSqlExec(sqlStr)
+  }
+
+  protected async initModityAction_ <T> (id: string, modityObj: Object) : Promise<QueryResult<T>> {
+    const updateList = []
+    Object.entries(modityObj).forEach(([field, value]) => {
+      let val = value
+      if (typeof val === 'string') {
+        val = `'${val}'`
+      }
+      updateList.push(`${field} = ${val}`)
+    })
+    const sqlStr = `
+      update ${this.baseTable_} set ${updateList.join(',')}
+        where id = '${id}'
+    `
     return await pgSqlExec(sqlStr)
   }
 
@@ -73,6 +89,15 @@ export class SerivceBase {
 
   public async $insert <T> (insertObj: Object) : Promise<true> {
     const result = await this.initInsertAction_<T>(insertObj)
+    if (result.rowCount !== 1) {
+      return Promise.reject(result)
+    }
+    return true
+  }
+
+  public async $modity (modityObj: Object & { id: string }) : Promise<true> {
+    const { id, ...nModityObj } = modityObj
+    const result = await this.initModityAction_(id, nModityObj)
     if (result.rowCount !== 1) {
       return Promise.reject(result)
     }

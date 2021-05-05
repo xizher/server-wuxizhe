@@ -3,7 +3,7 @@
 import { Injectable } from '@nestjs/common'
 import { QueryListDTO, QueryListResultDTO } from 'src/base/dtos.base'
 import SerivceBase from 'src/base/service.base'
-import { AddBlogDTO, BlogDTO } from './blog.dto'
+import { AddBlogDTO, BlogDTO, ModityBlogDTO } from './blog.dto'
 import ext from '@xizher/js-ext'
 
 @Injectable()
@@ -20,7 +20,6 @@ export class BlogService extends SerivceBase {
   //#region 公有方法
 
   public async $list <T> (options: QueryListDTO) : Promise<QueryListResultDTO<T>> {
-    console.log('jj')
     const { total, items } = await super.$list<BlogDTO>(options)
     return {
       total, items: items.map(item => ({
@@ -39,9 +38,32 @@ export class BlogService extends SerivceBase {
     }
   }
 
-  // public async $insert (dto: AddBlogDTO) : Promise<true> {
-  //   const { title, description, keywords, content } = dto
-  // }
+  public async $insert (dto: AddBlogDTO) : Promise<true> {
+    const title = escape(dto.title)
+    const description = escape(dto.description)
+    const keywords = escape(dto.keywords.join(','))
+    const content = escape(dto.content)
+    const createtime = Date.now()
+    const moditytime = createtime
+    return await super.$insert({
+      title, description, keywords, content,
+      createtime, moditytime,
+    })
+  }
+
+  public async $modity (dto: ModityBlogDTO) : Promise<true> {
+    const { id, title, description, keywords, content, publish } = dto
+    const updateObj : any = {}
+    title && (updateObj.title = escape(title))
+    description && (updateObj.description = escape(description))
+    keywords && Array.isArray(keywords) && (updateObj.keywords = escape(keywords.join(',')))
+    content && (updateObj.content = escape(content))
+    updateObj.moditytime = Date.now()
+    if (typeof publish === 'boolean') {
+      updateObj.publish = publish
+    }
+    return await super.$modity({ id, ...updateObj })
+  }
 
   //#endregion
 

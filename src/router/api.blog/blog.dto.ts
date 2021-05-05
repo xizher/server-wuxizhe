@@ -22,3 +22,12 @@ export class AddBlogDTO {
   readonly keywords: string[]
   readonly content: string
 }
+
+export class ModityBlogDTO {
+  readonly id: string
+  readonly title?: string
+  readonly description?: string
+  readonly keywords?: string[]
+  readonly content?: string
+  readonly publish?: boolean
+}
