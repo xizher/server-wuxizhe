@@ -75,6 +75,13 @@ export class ServiceBase {
     return await pgSqlExec(sqlStr)
   }
 
+  protected async initDeleteAction_ (id: string) : Promise<QueryResult> {
+    const sqlStr = `
+      delete from ${this.baseTable_} where id = '${id}'
+    `
+    return await pgSqlExec(sqlStr)
+  }
+
   //#endregion
 
   //#region 公有方法
@@ -98,6 +105,14 @@ export class ServiceBase {
   public async $modity (modityObj: Object & { id: string }) : Promise<true> {
     const { id, ...nModityObj } = modityObj
     const result = await this.initModityAction_(id, nModityObj)
+    if (result.rowCount !== 1) {
+      return Promise.reject(result)
+    }
+    return true
+  }
+
+  public async $delete (deleteObj: { id: string }) : Promise<true> {
+    const result = await this.initDeleteAction_(deleteObj.id)
     if (result.rowCount !== 1) {
       return Promise.reject(result)
     }
