@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import SerivceBase from 'src/base/service.base'
+import ServiceBase from 'src/base/service.base'
 import pgSqlExec from '@xizher/pg'
 import { cryptoUtils } from '@xizher/js-utils'
 import { AccountInfoDTO, AccountLoginDTO, AccountLoginResultDTO, TokenDTO } from './account.dto'
@@ -7,7 +7,7 @@ import { createToken, getAndCheckAccountByToken } from 'src/token'
 import { createError, ErrorType } from 'src/model/res.model'
 
 @Injectable()
-export class AccountSerivce extends SerivceBase {
+export class AccountService extends ServiceBase {
 
   //#region 构造函数
 
@@ -51,4 +51,4 @@ export class AccountSerivce extends SerivceBase {
 
 }
 
-export default AccountSerivce
+export default AccountService

@@ -2,13 +2,13 @@
 
 import { Controller, Post, Req, Request, UseInterceptors } from '@nestjs/common'
 import { CatchErrorInterceptor, SuccessResInterceptor } from 'src/model/res.model'
-import AccountSerivce from './account.service'
+import AccountService from './account.service'
 
 @Controller('api/account')
 @UseInterceptors(CatchErrorInterceptor, SuccessResInterceptor)
 export class AccountController {
 
-  constructor (private readonly accountService: AccountSerivce) {
+  constructor (private readonly accountService: AccountService) {
     //
   }
 

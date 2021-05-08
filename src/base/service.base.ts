@@ -7,7 +7,7 @@ import { QueryResult } from 'pg'
 import { QueryListResultDTO, QueryListDTO } from './dtos.base'
 
 @Injectable()
-export class SerivceBase {
+export class ServiceBase {
 
   //#region 保护属性
 
@@ -108,4 +108,4 @@ export class SerivceBase {
 
 }
 
-export default SerivceBase
+export default ServiceBase

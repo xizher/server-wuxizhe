@@ -2,12 +2,12 @@
 
 import { Injectable } from '@nestjs/common'
 import { QueryListDTO, QueryListResultDTO } from 'src/base/dtos.base'
-import SerivceBase from 'src/base/service.base'
+import ServiceBase from 'src/base/service.base'
 import { AddBlogDTO, BlogDTO, ModityBlogDTO } from './blog.dto'
 import ext from '@xizher/js-ext'
 
 @Injectable()
-export class BlogService extends SerivceBase {
+export class BlogService extends ServiceBase {
 
   //#region 构造函数
 
