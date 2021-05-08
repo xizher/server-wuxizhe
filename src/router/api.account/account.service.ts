@@ -4,7 +4,6 @@ import pgSqlExec from '@xizher/pg'
 import { cryptoUtils } from '@xizher/js-utils'
 import { AccountInfoDTO, AccountLoginDTO, AccountLoginResultDTO, TokenDTO } from './account.dto'
 import { createToken, getAndCheckAccountByToken } from 'src/token'
-import { createError, ErrorType } from 'src/model/res.model'
 
 @Injectable()
 export class AccountService extends ServiceBase {
@@ -39,10 +38,10 @@ export class AccountService extends ServiceBase {
     }
   }
 
-  public async $check (dto: TokenDTO) : Promise<AccountInfoDTO> {
+  public async $check (dto: TokenDTO) : Promise<AccountInfoDTO | false> {
     const account = await getAndCheckAccountByToken(dto.token)
     if (!account) {
-      return createError(ErrorType.TOKEN_ERROR)
+      return false
     }
     return account
   }
