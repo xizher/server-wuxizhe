@@ -1,7 +1,6 @@
 import { baseUtils } from '@xizher/js-utils'
 import pgSqlExec from '@xizher/pg'
-import { IAccountInfoDto } from 'src/dtos/account.dtos'
-import { createError } from 'src/model/res.model'
+import { AccountInfoDTO } from 'src/router/api.account/account.dto'
 
 export const minutes30 = 1000 * 60 * 30
 export const minutes15 = 1000 * 60 * 15
@@ -19,14 +18,14 @@ export async function createToken (accountId: string) : Promise<string> {
   return token
 }
 
-export async function getAccountByToken (token: string) : Promise<IAccountInfoDto> {
+export async function getAndCheckAccountByToken (token: string) : Promise<AccountInfoDTO | false> {
   const sqlStr = `
     select * from v_account_token
-      where token = '${token}'
+      where token = '${token ?? ''}'
   `
-  const result = await pgSqlExec<{ expired: string } & IAccountInfoDto>(sqlStr)
+  const result = await pgSqlExec<{ expired: string } & AccountInfoDTO>(sqlStr)
   if (result.rowCount !== 1 || Number(result.rows[0].expired) < Date.now()) {
-    return createError('0x101', 'Token已失效，请重新登录', '用户已过期，请重新登录')
+    return false
   }
   await updateToken(token)
   return {

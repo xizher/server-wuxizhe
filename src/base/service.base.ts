@@ -1,57 +1,23 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+
+import { Injectable } from '@nestjs/common'
 import { baseUtils } from '@xizher/js-utils'
 import pgSqlExec from '@xizher/pg'
 import { QueryResult } from 'pg'
-import { Observable } from 'rxjs'
-import { getAccountByToken } from 'src/token'
-import { map, tap } from 'rxjs/operators'
-
-export interface IQueryListResult<T> {
-  total: number,
-  items: T[]
-}
-
-export interface IQueryListOptions {
-  pageIndex?: number
-  pageSize?: number
-  orders?: string
-  // orders?: {
-  //   name: string
-  //   type: 'asc' | 'desc'
-  // }[]
-}
+import { QueryListResultDTO, QueryListDTO } from './dtos.base'
 
 @Injectable()
-export class BaseInterceptor implements NestInterceptor {
-  async intercept (context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    return next
-      .handle()
-      .pipe(
-        map(async data => {
-          await getAccountByToken(context.getArgByIndex(0).headers.token)
-          return data
-        })
-      )
-  }
-}
-
-/** 基础服务类 */
-export class BaseService {
+export class ServiceBase {
 
   //#region 保护属性
 
-  /** 基础表 */
+  /** 基础数据库表 */
   protected baseTable_: string
 
   //#endregion
 
   //#region 构造函数
 
-  /**
-   * 构造基础服务对象
-   * @param baseTable 基础表
-   */
   constructor (baseTable: string) {
     this.baseTable_ = baseTable
   }
@@ -60,11 +26,7 @@ export class BaseService {
 
   //#region 保护方法
 
-  protected async checkToken_ (token: string) : Promise<void> {
-    await getAccountByToken(token)
-  }
-
-  protected async initQueryListAction_ <T> (options: IQueryListOptions = {}) : Promise<QueryResult<T>> {
+  protected async initQueryListAction_ <T> (options: QueryListDTO = {}) : Promise<QueryResult<T>> {
     const { pageIndex, pageSize, orders } = options
     let sqlStr = `select * from ${this.baseTable_}`
     if (orders) {
@@ -82,7 +44,7 @@ export class BaseService {
     const sqlStr = `
       insert into ${this.baseTable_} (
         id, ${Object.keys(insertObj).join(',')}
-      ) values ( ${id},
+      ) values ( '${id}',
         ${
           Object.values(insertObj).map(value => {
             if (typeof value === 'string') {
@@ -97,20 +59,60 @@ export class BaseService {
     return await pgSqlExec(sqlStr)
   }
 
+  protected async initModityAction_ <T> (id: string, modityObj: Object) : Promise<QueryResult<T>> {
+    const updateList = []
+    Object.entries(modityObj).forEach(([field, value]) => {
+      let val = value
+      if (typeof val === 'string') {
+        val = `'${val}'`
+      }
+      updateList.push(`${field} = ${val}`)
+    })
+    const sqlStr = `
+      update ${this.baseTable_} set ${updateList.join(',')}
+        where id = '${id}'
+    `
+    return await pgSqlExec(sqlStr)
+  }
+
+  protected async initDeleteAction_ (id: string) : Promise<QueryResult> {
+    const sqlStr = `
+      delete from ${this.baseTable_} where id = '${id}'
+    `
+    return await pgSqlExec(sqlStr)
+  }
+
   //#endregion
 
   //#region 公有方法
 
-  public async $queryList <T> (options: IQueryListOptions, token: string) : Promise<IQueryListResult<T>> {
+  public async $list <T> (options: QueryListDTO) : Promise<QueryListResultDTO<T>> {
     const result = await this.initQueryListAction_<T>(options)
     return {
       total: result.rowCount,
-      items: result.rows
+      items: result.rows,
     }
   }
 
-  public async $insertItem <T> (insertObj: Object) : Promise<true> {
+  public async $insert <T> (insertObj: Object) : Promise<true> {
     const result = await this.initInsertAction_<T>(insertObj)
+    if (result.rowCount !== 1) {
+      return Promise.reject(result)
+    }
+    return true
+  }
+
+  public async $modity (modityObj: Object & { id: string }) : Promise<true> {
+    const { id, ...nModityObj } = modityObj
+    const result = await this.initModityAction_(id, nModityObj)
+    if (result.rowCount !== 1) {
+      return Promise.reject(result)
+    }
+    return true
+  }
+
+  public async $delete (deleteObj: { id: string }) : Promise<true> {
+    const result = await this.initDeleteAction_(deleteObj.id)
     if (result.rowCount !== 1) {
       return Promise.reject(result)
     }
@@ -120,3 +122,5 @@ export class BaseService {
   //#endregion
 
 }
+
+export default ServiceBase
