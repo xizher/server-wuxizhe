@@ -8,7 +8,7 @@ export const minutes5 = 1000 * 60 * 5
 
 export async function createToken (accountId: string) : Promise<string> {
   const token = baseUtils.createGuid()
-  const expired = Date.now() + minutes5
+  const expired = Date.now() + minutes15
   const sqlStr = `insert into tb_token (accountid, token, expired)
     values ('${accountId}', '${token}', ${expired})
     on conflict (accountid)
