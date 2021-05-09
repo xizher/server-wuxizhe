@@ -39,8 +39,8 @@ export class PwdService extends ServiceBase {
     const { id, name, pwd, comment } = dto
     const updateObj : any = {}
     name && (updateObj.name = escape(name))
-    pwd && (updateObj.name = pwd)
-    comment && (updateObj.name = escape(comment))
+    pwd && (updateObj.pwd = pwd)
+    comment && (updateObj.comment = escape(comment))
     return await super.$modity({ id, ...updateObj })
   }
 
@@ -51,3 +51,5 @@ export class PwdService extends ServiceBase {
   //#endregion
 
 }
+
+export default PwdService

@@ -6,7 +6,7 @@ export class QueryListResultDTO<T> {
 export class QueryListDTO {
   readonly pageIndex?: number
   readonly pageSize?: number
-  readonly orders?: string
+  readonly orders?: string[]
   // orders?: {
   //   name: string
   //   type: 'asc' | 'desc'

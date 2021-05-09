@@ -30,9 +30,9 @@ export class ServiceBase {
     const { pageIndex, pageSize, orders } = options
     let sqlStr = `select * from ${this.baseTable_}`
     if (orders) {
-      sqlStr = `${sqlStr} order by ${(JSON.parse(orders)).map(item => `${item.name} ${item.type}`).join(',')}`
+      sqlStr = `${sqlStr} order by ${orders.map(item => `${JSON.parse(item).name} ${JSON.parse(item).type}`).join(',')}`
     }
-    if (!isNaN(pageIndex) && !isNaN(pageSize)) {
+    if (!isNaN(pageIndex) && !isNaN(pageSize) && Number(pageSize) !== -1) {
       sqlStr = `${sqlStr} limit ${pageSize} offset ${pageIndex * pageSize}`
     }
     return await pgSqlExec<T>(sqlStr)
@@ -88,9 +88,9 @@ export class ServiceBase {
 
   public async $list <T> (options: QueryListDTO) : Promise<QueryListResultDTO<T>> {
     const result = await this.initQueryListAction_<T>(options)
+    const total = Number((await pgSqlExec(`select count(*) from ${this.baseTable_}`)).rows[0]['count'])
     return {
-      total: result.rowCount,
-      items: result.rows,
+      total, items: result.rows,
     }
   }
 
