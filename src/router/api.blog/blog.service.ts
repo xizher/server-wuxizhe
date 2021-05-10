@@ -32,8 +32,8 @@ export class BlogService extends ServiceBase {
         publish: item.publish,
         createtime: Number(item.createtime),
         moditytime: Number(item.moditytime),
-        createTime: ext(Number(item.createtime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
-        modityTime: ext(Number(item.moditytime)).toDateFormat('yyyy/MM/dd hh:mm:ss'),
+        createTime: ext(Number(item.createtime)).toDateFormat('yyyy/MM/dd'),
+        modityTime: ext(Number(item.moditytime)).toDateFormat('yyyy/MM/dd'),
       })) as any
     }
   }
